@@ -1,3 +1,4 @@
+<!-- Author - Sunraku -->
 <!DOCTYPE HTML>
     <html>
     <head>
@@ -13,7 +14,7 @@
                 top: 20px;
                 right: 20px;
                 z-index: 10; /* Forces the button to sit on top of the 360 viewer */
-                padding: 10px 18px;
+                padding: 6px 5px;
                 background-color: #1a1a1a;
                 color: #ffffff;
                 border: 2px solid #555;
@@ -27,7 +28,7 @@
 
             /* A class we will toggle with JavaScript to change the button's look */
             .time-btn.day-mode {
-                background-color: #f1c40f;
+                background-color: #ecf0b3;
                 color: #000;
                 border-color: #d4ac0d;
             }
@@ -79,7 +80,7 @@
     background: rgba(0, 0, 0, 0.6);
     border: 2px solid rgba(255, 255, 255, 0.8);
     border-radius: 50%;
-    color: rgba(21, 255, 0, 0.637);
+    color: rgba(202, 245, 198, 0.637);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -121,7 +122,7 @@
     <body>
 
     <div id="campus-map"></div>
-    <button id="toggle-time" class="time-btn">🌙 Night Mode</button>
+    <button id="toggle-time" class="time-btn">🌙</button>
 
     <script>
     const viewer = pannellum.viewer('campus-map', {
@@ -131,7 +132,7 @@
             "autoLoad": true , 
             "autoRotate" : -2,
             "autoRotateInactivityDelay": 3000,
-            "hotSpotDebug": true,
+            // "hotSpotDebug": true,
             "touchPanSpeedCoeffFactor": 0.7, // Cuts the swipe speed in half
             "friction": 0.4
         },
@@ -177,7 +178,7 @@
                             "yaw": 2.0, 
                             "type": "scene",
                             "text": "Go to tree",
-                            "sceneId": "tree_day",
+                            "sceneId": "tree_night",
                             "cssClass": "custom-arrow point-up"
                         }
                     ]
@@ -375,13 +376,13 @@
         if(isNight) {
             // switching to day 
             nextScene = currentScene.replace("_night", "_day");
-            toggleBtn.innerHTML = "🌙 Night Mode";
+            toggleBtn.innerHTML = "🌙";
             toggleBtn.classList.remove("day-mode");
             isNight = false;
         } else {
             // switch to night 
             nextScene = currentScene.replace("_day", "_night");
-            toggleBtn.innerHTML = "☀️ Day Mode";
+            toggleBtn.innerHTML = "☀️";
             toggleBtn.classList.add("day-mode");
             isNight = true;
         }
@@ -393,4 +394,3 @@
 
     </body>
     </html>
-
