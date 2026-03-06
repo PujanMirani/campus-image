@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campus Virtual Tour</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css">
+    <script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
+    <style>
+        /* 1. Basic Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* 2. Main Container */
+        .hero {
+            height: 100vh;
+            width: 100%;
+            background-image: url('https://github.com/Levi-acker07man/Campus-tour.iiitdmj/blob/main/Untitled.jpg?raw=true');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            background-color: #000;
+        }
+
+        /* 3. The 360 Viewer (Hidden behind the blur initially) */
+        #campus-map {
+            width: 100vw;
+            height: 100vh;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        /* 4. The Blur Overlay */
+        .blur-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.2); 
+            backdrop-filter: blur(15px);    
+            -webkit-backdrop-filter: blur(15px); 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            transition: all 1s ease-in-out;
+        }
+
+        /* 5. Top Left Hover Area */
+        .info-container {
+            position: absolute;
+            top: 30px;
+            left: 70px;
+            z-index: 30;
+            cursor: default;
+        }
+
+        .logo{
+           position: absolute;
+           top: 27px;
+           left: 30px;
+           width: 30px; 
+        }
+
+        .top-left-text {
+            color: white;
+            font-size: 0.8rem; 
+            font-weight: 800;
+            text-transform: uppercase;
+            line-height: 1;
+            text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
+            transition: color 0.3s ease;
+        }
+
+        .campus-details {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            border-left: 4px solid #e6f05a;
+            margin-top: 15px;
+            padding: 0 15px;
+            color: white;
+            transition: all 0.5s ease;
+            width: 300px;
+        }
+
+        .info-container:hover .campus-details {
+            max-height: 230px;
+            opacity: 1;
+            padding: 15px;
+        }
+
+        .info-container:hover .top-left-text {
+            color: #e6f05a;
+        }
+
+        .campus-details p {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 8px;
+        }
+
+        .campus-details span {
+            font-weight: bold;
+            color: #e6f05a; 
+        }
+
+        /* 6. THE GLASSY BUTTON EFFECT */
+        .start-btn {
+            padding: 20px 50px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            background: rgba(255, 255, 255, 0.1); 
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            transition: all 0.4s ease;
+            position: relative;
+            z-index: 10;
+            animation: pulse 2s infinite;
+        }
+
+        .start-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            transform: scale(1.05);
+            box-shadow: 0 8px 32px 0 rgba(230, 240, 90, 0.3);
+            letter-spacing: 4px;
+        }
+
+        /* Night Mode Toggle Button */
+        .time-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 5;
+            padding: 10px 18px;
+            background-color: #1a1a1a;
+            color: #ffffff;
+            border: 2px solid #555;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            display: none;
+        }
+
+        /* Class to hide the landing page */
+        .blur-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+            backdrop-filter: blur(0px);
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(255, 255, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="hero">
+        <div id="campus-map"></div>
+        <button id="toggle-time" class="time-btn">🌙 Night Mode</button>
+
+        <div id="hero-layer" class="blur-overlay">
+        <img class="logo" src="logo.jpg">
+
+            <div class="info-container">
+                <h1 class="top-left-text">Know more <br>about campus..</h1>
+                <div class="campus-details">
+                    <p><span>Established:</span> 2005</p>
+                    <p><span>Location:</span> Jabalpur, Madhya Pradesh</p>
+                    <p><span>Campus:</span> PDPM IIITDM Jabalpur</p>
+                    <p>Experience our campus in a 360° virtual environment.</p>
+                </div>
+            </div>
+
+            <button class="start-btn" onclick="startTour()">VIRTUAL TOUR</button>
+        </div>
+    </div>
+
+    <script>
+        // 1. Initialize Pannellum Viewer with your scene data
+        const viewer = pannellum.viewer('campus-map', {
+           "default": {
+            "firstScene": "main_gate_day", 
+            "sceneFadeDuration": 1500, 
+            "autoLoad": true , 
+            "autoRotate" : -2,
+            "autoRotateInactivityDelay": 3000,
+            // "hotSpotDebug": true
+        },
+        "scenes": {
+            "main_gate_day": {
+                "title": "Main Gate Day",
+                "type": "multires",
+                "multiRes" :{
+            "basePath": "./main_gate_day_tiles", 
+            "path": "/%l/%s%y_%x",
+            "fallbackPath": "/fallback/%s",
+            "extension": "jpg",
+            "tileResolution": 512,
+            "maxLevel": 4,  
+            "cubeResolution": 2768 
+        },
+                "hotSpots": [
+                    {
+                        "pitch": -1.0, 
+                        "yaw": 2.0, 
+                        "type": "scene",
+                        "text": "Go to tree",
+                        "sceneId": "tree_day"
+                    }
+                ]
+            },
+            "main_gate_night": {
+                "title": "Main Gate Night",
+                "type": "multires",
+                "multiRes": {
+                    "basePath": "./main_gate_day_tiles", // <- to be changed to night
+                    "path": "/%l/%s%y_%x",
+                    "fallbackPath": "/fallback/%s",
+                    "extension": "jpg",
+                    "tileResolution": 512,
+                    "maxLevel": 4,
+                    "cubeResolution": 2768
+                },
+                    "hotSpots": [
+                        {
+                            "pitch": -1.0, 
+                            "yaw": 2.0, 
+                            "type": "scene",
+                            "text": "Go to tree",
+                            "sceneId": "tree_day"
+                        }
+                    ]
+            },
+            "center_day": {
+                "title": "tree Day",
+                "type": "multires",
+                "multiRes" :{
+            "basePath": "./center_day_tiles", 
+            "path": "/%l/%s%y_%x",
+            "fallbackPath": "/fallback/%s",
+            "extension": "jpg",
+            "tileResolution": 512,
+            "maxLevel": 4,  
+            "cubeResolution": 2768
+        },
+                "hotSpots": [
+                    {
+                        "pitch": -4.0,
+                        "yaw": 175.,
+                        "type":"scene",
+                        "text":"back to cafeteria",
+                        "sceneId": "cafeteria_day"
+                    }    
+                ]
+            },
+            "center_night": {
+                "title": "Center night",
+                "type": "multires",
+                "multiRes" :{
+            "basePath": "./center_night_tiles", 
+            "path": "/%l/%s%y_%x",
+            "fallbackPath": "/fallback/%s",
+            "extension": "jpg",
+            "tileResolution": 512,
+            "maxLevel": 4,  
+            "cubeResolution": 2768
+        },
+                "hotSpots": [
+                    {
+                        "pitch": -4.0, // <- -3.1
+                        "yaw": 175., // <- 95.9
+                        "type":"scene",
+                        "text":"back to cafeteria",
+                        "sceneId": "cafeteria_night"
+                    }    
+                ]
+            },
+            "cafeteria_day" : {
+                "title" : "cafeteria_day",
+                "type": "multires",
+                "multiRes" :{
+            "basePath": "./canteen_tiles", 
+            "path": "/%l/%s%y_%x",
+            "fallbackPath": "/fallback/%s",
+            "extension": "jpg",
+            "tileResolution": 512,
+            "maxLevel": 4,  
+            "cubeResolution": 2768 
+        },
+                "hotSpots": [
+                    {
+                        "pitch": -12.0,
+                        "yaw": 179.5 ,
+                        "type": "scene",
+                        "text": "GO to center ",
+                        "sceneId": "center_day"
+                    },
+                    {   
+                        "pitch": -10.0,
+                        "yaw": 156.0,
+                        "type":"scene",
+                        "text":"back to tree",
+                        "sceneId": "tree_day"
+                    }        
+                ]
+            },
+            "cafeteria_night" : { // <- to be changed night
+                "title" : "cafeteria_night",
+                "type": "multires",
+                "multiRes" :{
+            "basePath": "./canteen_tiles", 
+            "path": "/%l/%s%y_%x",
+            "fallbackPath": "/fallback/%s",
+            "extension": "jpg",
+            "tileResolution": 512,
+            "maxLevel": 4,  
+            "cubeResolution": 2768 
+        },
+                "hotSpots": [
+                    {
+                        "pitch": -12.0,
+                        "yaw": 179.5 ,
+                        "type": "scene",
+                        "text": "GO to center ",
+                        "sceneId": "center_night"
+                    },
+                    {   
+                        "pitch": -10.0,
+                        "yaw": 156.0,
+                        "type":"scene",
+                        "text":"back to tree",
+                        "sceneId": "tree_night"
+                    }        
+                ]
+            },
+            "tree_day" :{
+                "title": 'tree_day',
+                "type": 'multires',
+                "multiRes" :{
+            "basePath": "./tree_day_tiles", 
+            "path": "/%l/%s%y_%x",
+            "fallbackPath": "/fallback/%s",
+            "extension": "jpg",
+            "tileResolution": 512,
+            "maxLevel": 4,  
+            "cubeResolution": 2768 
+        },
+                "hotSpots":[
+                    {
+                        "pitch": 5.0,
+                        "yaw": 20.0,
+                        "type":"scene",
+                        "text":"GO to cafeteria",
+                        "sceneId": "cafeteria_day"
+                    },
+                    {
+                        "pitch": -7,      
+                        "yaw": -92,
+                        "type":"scene",
+                        "text":"back to main gate",
+                        "sceneId": "main_gate_day"
+                    }
+                ]
+
+
+            },
+            "tree_night" :{ // <- to be changed to night
+                "title": 'tree_night',
+                "type": 'multires',
+                "multiRes" :{
+            "basePath": "./tree_day_tiles", 
+            "path": "/%l/%s%y_%x",
+            "fallbackPath": "/fallback/%s",
+            "extension": "jpg",
+            "tileResolution": 512,
+            "maxLevel": 4,  
+            "cubeResolution": 2768 
+        },
+                "hotSpots":[
+                    {
+                        "pitch": 5.0,
+                        "yaw": 20.0,
+                        "type":"scene",
+                        "text":"GO to cafeteria",
+                        "sceneId": "cafeteria_night"
+                    },
+                    {
+                        "pitch": -7,      
+                        "yaw": -92,
+                        "type":"scene",
+                        "text":"back to main gate",
+                        "sceneId": "main_gate_night"
+                    }
+                ]
+
+
+            },
+        }
+    });
+
+        // 2. The Start Function (This replaces the alert)
+        function startTour() {
+            const overlay = document.getElementById('hero-layer');
+            const nightBtn = document.getElementById('toggle-time');
+            
+            // Fade out the landing screen
+            overlay.classList.add('hidden');
+            // Show the night mode button
+            nightBtn.style.display = 'block';
+        }
+
+        // 3. Day/Night Logic
+        let isNight = false;
+        const toggleBtn = document.getElementById('toggle-time');
+        toggleBtn.addEventListener('click', () => {
+            const currentScene = viewer.getScene();
+            const currentPitch = viewer.getPitch();
+            const currentYaw = viewer.getYaw();
+            let nextScene = isNight ? currentScene.replace("_night", "_day") : currentScene.replace("_day", "_night");
+            
+            toggleBtn.innerHTML = isNight ? "🌙 Night Mode" : "☀️ Day Mode";
+            isNight = !isNight;
+            viewer.loadScene(nextScene, currentPitch, currentYaw);
+        });
+    </script>
+</body>
+</html>
